@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #define MATRIX_SIZE 3
 
@@ -40,16 +41,40 @@ int isStackEmpty(StackElem **stack) {
 
 #pragma endregion
 
+#pragma region MATRIX_READING_AND_GENERATING
 
-void readMatrix(int matrix[MATRIX_SIZE][MATRIX_SIZE], int matrixDimensions) {
+void readMatrix(int matrix[MATRIX_SIZE][MATRIX_SIZE]) {
 	int i, j;
-	for (i = 0; i < matrixDimensions; i++) {
-		for (j = 0; j < matrixDimensions; j++) {
+	for (i = 0; i < MATRIX_SIZE; i++) {
+		for (j = 0; j < MATRIX_SIZE; j++) {
 			scanf_s("%d", &matrix[i][j]);
 		}
 	}
 	return;
 }
+
+void generateMatrix(int matrix[MATRIX_SIZE][MATRIX_SIZE]) {
+	int indices[MATRIX_SIZE * MATRIX_SIZE];
+	int i, index, t;
+	double randomNumber;
+	for (i = 0; i < MATRIX_SIZE * MATRIX_SIZE; i++) {
+		indices[i] = i;
+	}
+	srand((int)time(NULL));
+	for (i = 0; i < MATRIX_SIZE * MATRIX_SIZE; i++) {
+		randomNumber = (double)rand() / (RAND_MAX + 1);
+		index = (int)(randomNumber * (MATRIX_SIZE * MATRIX_SIZE - i) + i);
+		t = indices[i];
+		indices[i] = indices[index];
+		indices[index] = t;
+	}
+	for (i = 0; i < MATRIX_SIZE * MATRIX_SIZE; i++) {
+		matrix[indices[i] / MATRIX_SIZE][indices[i] % MATRIX_SIZE] = i;
+	}
+	return;
+}
+
+#pragma endregion
 
 void printMenu() {
 	printf("1. Enter start and end positions for the puzzle\n");
@@ -73,12 +98,13 @@ int main() {
 		switch (menuOption) {
 		case 1:	// Read start and end matrix
 			printf("Enter start matrix:\n");
-			readMatrix(start, MATRIX_SIZE);
+			readMatrix(start);
 			printf("Enter end matrix:\n");
-			readMatrix(end, MATRIX_SIZE);
+			readMatrix(end);
 			break;
 		case 2:	// Generate start and end matrix
-			/* TODO: implement */
+			generateMatrix(start);
+			generateMatrix(end);
 			break;
 		case 3:	// Check if solution exists
 			/* TODO: implement */
