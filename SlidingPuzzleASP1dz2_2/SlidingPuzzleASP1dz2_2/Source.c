@@ -10,9 +10,13 @@
 
 #define BITS_IN_BYTE 8
 
+typedef struct StackDataStruct {
+	int value;
+	int timesOnStack;
+} StackData;
 
 typedef struct StackElemStruct {
-	int value;
+	StackData data;
 	struct StackElemStruct *next;
 } StackElem;
 
@@ -21,24 +25,25 @@ typedef struct StackElemStruct {
 void push(StackElem **stack, int elemValue) {
 	StackElem *newElem;
 	newElem = (StackElem *)malloc(sizeof(StackElem));
-	newElem->value = elemValue;
+	newElem->data.value = elemValue;
+	newElem->data.timesOnStack = 0;
 	newElem->next = *stack;
 	*stack = newElem;
 	return;
 }
 
-int pop(StackElem **stack) {
+StackData pop(StackElem **stack) {
 	StackElem *old;
-	int elemValue;
+	StackData elemData;
 	old = *stack;
-	elemValue = (*stack)->value;
+	elemData = (*stack)->data;
 	*stack = (*stack)->next;
 	free(old);
-	return elemValue;
+	return elemData;
 }
 
-int top(StackElem **stack) {
-	return (*stack)->value;
+StackData top(StackElem **stack) {
+	return (*stack)->data;
 }
 
 int isStackEmpty(StackElem **stack) {
