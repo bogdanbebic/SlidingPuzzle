@@ -26,7 +26,6 @@ void push(StackElem **stack, int elemValue) {
 	StackElem *newElem;
 	newElem = (StackElem *)malloc(sizeof(StackElem));
 	newElem->data.value = elemValue;
-	newElem->data.timesOnStack = 0;
 	newElem->next = *stack;
 	*stack = newElem;
 	return;
