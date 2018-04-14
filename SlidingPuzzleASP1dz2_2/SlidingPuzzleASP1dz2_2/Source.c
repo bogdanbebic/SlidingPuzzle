@@ -3,6 +3,7 @@
 #include <time.h>
 
 #define MATRIX_SIZE 3
+#define MATRIX_ELEMENTS MATRIX_SIZE * MATRIX_SIZE
 
 
 typedef struct StackElemStruct {
@@ -54,21 +55,20 @@ void readMatrix(int matrix[MATRIX_SIZE][MATRIX_SIZE]) {
 }
 
 void generateMatrix(int matrix[MATRIX_SIZE][MATRIX_SIZE]) {
-	int indices[MATRIX_SIZE * MATRIX_SIZE];
+	int indices[MATRIX_ELEMENTS];
 	int i, index, t;
 	double randomNumber;
-	for (i = 0; i < MATRIX_SIZE * MATRIX_SIZE; i++) {
+	for (i = 0; i < MATRIX_ELEMENTS; i++) {
 		indices[i] = i;
 	}
-	srand((int)time(NULL));
-	for (i = 0; i < MATRIX_SIZE * MATRIX_SIZE; i++) {
+	for (i = 0; i < MATRIX_ELEMENTS; i++) {
 		randomNumber = (double)rand() / (RAND_MAX + 1);
-		index = (int)(randomNumber * (MATRIX_SIZE * MATRIX_SIZE - i) + i);
+		index = (int)(randomNumber * (MATRIX_ELEMENTS - i) + i);
 		t = indices[i];
 		indices[i] = indices[index];
 		indices[index] = t;
 	}
-	for (i = 0; i < MATRIX_SIZE * MATRIX_SIZE; i++) {
+	for (i = 0; i < MATRIX_ELEMENTS; i++) {
 		matrix[indices[i] / MATRIX_SIZE][indices[i] % MATRIX_SIZE] = i;
 	}
 	return;
@@ -90,7 +90,8 @@ int main() {
 	int menuOption;
 	int start[MATRIX_SIZE][MATRIX_SIZE];
 	int end[MATRIX_SIZE][MATRIX_SIZE];
-
+	
+	srand((int)time(NULL));
 
 	while (1) {
 		printMenu();
