@@ -22,15 +22,16 @@ typedef struct StackElemStruct {
 
 #pragma region STACK_FUNCTIONS_IMPLEMENTATION
 
-void push(StackElem **stack, int elemValue[MATRIX_SIZE][MATRIX_SIZE]) {
+void push(StackElem **stack, StackData data) {
 	StackElem *newElem;
 	int i, j;
 	newElem = (StackElem *)malloc(sizeof(StackElem));
 	for (i = 0; i < MATRIX_SIZE; i++) {
 		for (j = 0; j < MATRIX_SIZE; j++) {
-			newElem->data.value[i][j] = elemValue[i][j];
+			newElem->data.value[i][j] = data.value[i][j];
 		}
 	}
+	newElem->data.timesOnStack = data.timesOnStack;
 	newElem->next = *stack;
 	*stack = newElem;
 	return;
@@ -129,6 +130,37 @@ void moveDown(int matrix[MATRIX_SIZE][MATRIX_SIZE], int *i, int *j) {
 	return;
 }
 
+void move(int matrix[MATRIX_SIZE][MATRIX_SIZE], int *i, int *j, int *direction) {
+	switch (*direction) {
+	case 0:
+		if (*j != 0) {
+			moveLeft(matrix, i, j);
+			return;
+		}
+		break;
+	case 1:
+		if (*j != MATRIX_SIZE - 1) {
+			moveRight(matrix, i, j);
+			return;
+		}
+		break;
+	case 2:
+		if (*i != 0) {
+			moveUp(matrix, i, j);
+			return;
+		}
+		break;
+	case 3:
+		if (*i != MATRIX_SIZE) {
+			moveDown(matrix, i, j);
+			return;
+		}
+		break;
+	}
+	*direction = -1;
+	return;
+}
+
 #pragma endregion
 
 #pragma region PUZZLE_SOLVABILITY_CHECKING
@@ -171,11 +203,19 @@ void matchEmptyCellsInBothMatrices(int start[MATRIX_SIZE][MATRIX_SIZE], int end[
 	return;
 }
 
-int isSolutionPossible(int start[MATRIX_SIZE][MATRIX_SIZE], int end[MATRIX_SIZE][MATRIX_SIZE]) {
+int isSolutionPossible(int x[MATRIX_SIZE][MATRIX_SIZE], int y[MATRIX_SIZE][MATRIX_SIZE]) {
 	int i, j;
 	int i1, j1;
 	int counter = 0;
 	int t;
+	int start[MATRIX_SIZE][MATRIX_SIZE], end[MATRIX_SIZE][MATRIX_SIZE];
+
+	for (i = 0; i < MATRIX_SIZE; i++) {
+		for (j = 0; j < MATRIX_SIZE; j++) {
+			start[i][j] = x[i][j];
+			end[i][j] = y[i][j];
+		}
+	}
 
 	matchEmptyCellsInBothMatrices(start, end);
 	
@@ -195,6 +235,8 @@ int isSolutionPossible(int start[MATRIX_SIZE][MATRIX_SIZE], int end[MATRIX_SIZE]
 
 #pragma endregion
 
+#pragma region MATRIX_FUNCTIONS
+
 int hashMatrixToInt(int matrix[MATRIX_SIZE][MATRIX_SIZE]) {
 	int number = 0;
 	int product = 1;
@@ -208,28 +250,85 @@ int hashMatrixToInt(int matrix[MATRIX_SIZE][MATRIX_SIZE]) {
 	return number;
 }
 
+int areEqual(int x[MATRIX_SIZE][MATRIX_SIZE], int y[MATRIX_SIZE][MATRIX_SIZE]) {
+	int i, j;
+	for (i = 0; i < MATRIX_SIZE; i++) {
+		for (j = 0; j < MATRIX_SIZE; j++) {
+			if (x[i][j] != y[i][j]) return 0;
+		}
+	}
+	return 1;
+}
+
+void outputMatrix(int matrix[MATRIX_SIZE][MATRIX_SIZE]) {
+	int i, j;
+	for (i = 0; i < MATRIX_SIZE; i++) {
+		for (j = 0; j < MATRIX_SIZE; j++) {
+			printf("%d ", matrix[i][j]);
+		}
+		putchar('\n');
+	}
+	putchar('\n');
+	return;
+}
+
+#pragma endregion
 
 char set[MAX - MIN];
 
 /*
-*	TODO:
-*	implement
+*	TODO: fix
+*	works for only left solutions
 */
 void findPuzzleSolution(int start[MATRIX_SIZE][MATRIX_SIZE], int end[MATRIX_SIZE][MATRIX_SIZE]) {
-	int m[MATRIX_SIZE][MATRIX_SIZE];
 	int iEmpty, jEmpty;
 	int i, j;
-
+	StackData data;
+	StackElem *stack = NULL;
+	StackElem *stack1 = NULL;
 	for (i = 0; i < MATRIX_SIZE; i++) {
 		for (j = 0; j < MATRIX_SIZE; j++) {
-			m[i][j] = start[i][j];
+			data.value[i][j] = start[i][j];
 		}
 	}
-
+	data.timesOnStack = 0;
 	findCellWithValue(start, &iEmpty, &jEmpty, 0);
 	
-	/* TODO: implement */
+	/* TODO: fix below */
+	while (!areEqual(data.value, end)) {
+		while (data.timesOnStack != -1) {
+			if (areEqual(data.value, end)) break;
+			if (set[hashMatrixToInt(data.value)]) data.timesOnStack = -1;
+			else {
+				set[hashMatrixToInt(data.value)] = 1;
+				push(&stack, data);
+				if (jEmpty != 0) {
+					moveLeft(data.value, &iEmpty, &jEmpty);
 
+				}
+				else {
+					data.timesOnStack = -1;
+				}
+			}
+		}
+		if (areEqual(data.value, end)) break;
+		data = pop(&stack);
+		if (data.timesOnStack < 3 && data.timesOnStack >= 0) {
+			data.timesOnStack++;
+			push(&stack, data);
+			move(data.value, &iEmpty, &jEmpty, &data.timesOnStack);
+		}
+	}
+	push(&stack, data);
+	/* TODO: fix above */
+
+	while (!isStackEmpty(&stack)) {
+		push(&stack1, pop(&stack));
+	}
+	while (!isStackEmpty(&stack1)) {
+		data = pop(&stack1);
+		outputMatrix(data.value);
+	}
 	return;
 }
 
@@ -248,6 +347,7 @@ int main() {
 	int menuOption;
 	int start[MATRIX_SIZE][MATRIX_SIZE];
 	int end[MATRIX_SIZE][MATRIX_SIZE];
+	int i;
 	int flag = 0;
 
 	srand((int)time(NULL));
@@ -280,7 +380,8 @@ int main() {
 			break;
 		case 4:	// Simulate puzzle
 			if (flag && isSolutionPossible(start, end)) {
-				/* TODO: implement */
+				for (i = 0; i < MAX - MIN; set[i++] = 0);
+				findPuzzleSolution(start, end);
 			}
 			else {
 				printf("There is no puzle or it is unsolvable\n");
