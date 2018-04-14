@@ -91,6 +91,46 @@ void generateMatrix(int matrix[MATRIX_SIZE][MATRIX_SIZE]) {
 
 #pragma endregion
 
+#pragma region MATRIX_ELEMENT_MOVING
+
+void moveLeft(int matrix[MATRIX_SIZE][MATRIX_SIZE], int *i, int *j) {
+	int t;
+	t = matrix[*i][*j];
+	matrix[*i][*j] = matrix[*i][*j - 1];
+	matrix[*i][*j - 1] = t;
+	(*j)--;
+	return;
+}
+
+void moveRight(int matrix[MATRIX_SIZE][MATRIX_SIZE], int *i, int *j) {
+	int t;
+	t = matrix[*i][*j];
+	matrix[*i][*j] = matrix[*i][*j + 1];
+	matrix[*i][*j + 1] = t;
+	(*j)++;
+	return;
+}
+
+void moveUp(int matrix[MATRIX_SIZE][MATRIX_SIZE], int *i, int *j) {
+	int t;
+	t = matrix[*i][*j];
+	matrix[*i][*j] = matrix[*i - 1][*j];
+	matrix[*i - 1][*j] = t;
+	(*i)--;
+	return;
+}
+
+void moveDown(int matrix[MATRIX_SIZE][MATRIX_SIZE], int *i, int *j) {
+	int t;
+	t = matrix[*i][*j];
+	matrix[*i][*j] = matrix[*i + 1][*j];
+	matrix[*i + 1][*j] = t;
+	(*i)++;
+	return;
+}
+
+#pragma endregion
+
 #pragma region PUZZLE_SOLVABILITY_CHECKING
 
 void findCellWithValue(int matrix[MATRIX_SIZE][MATRIX_SIZE], int *iEmpty, int *jEmpty, int cellValue) {
@@ -110,35 +150,22 @@ void findCellWithValue(int matrix[MATRIX_SIZE][MATRIX_SIZE], int *iEmpty, int *j
 void matchEmptyCellsInBothMatrices(int start[MATRIX_SIZE][MATRIX_SIZE], int end[MATRIX_SIZE][MATRIX_SIZE]) {
 	int iEmptyStart, jEmptyStart;
 	int iEmptyEnd, jEmptyEnd;
-	int t;
 
 	findCellWithValue(start, &iEmptyStart, &jEmptyStart, 0);
 	findCellWithValue(end, &iEmptyEnd, &jEmptyEnd, 0);
 
 	while (iEmptyStart != iEmptyEnd || jEmptyStart != jEmptyEnd) {
 		if (iEmptyStart > iEmptyEnd) {
-			t = start[iEmptyStart][jEmptyStart];
-			start[iEmptyStart][jEmptyStart] = start[iEmptyStart - 1][jEmptyStart];
-			start[iEmptyStart - 1][jEmptyStart] = t;
-			iEmptyStart--;
+			moveUp(start, &iEmptyStart, &jEmptyStart);
 		}
 		if (iEmptyStart < iEmptyEnd) {
-			t = start[iEmptyStart][jEmptyStart];
-			start[iEmptyStart][jEmptyStart] = start[iEmptyStart + 1][jEmptyStart];
-			start[iEmptyStart + 1][jEmptyStart] = t;
-			iEmptyStart++;
+			moveDown(start, &iEmptyStart, &jEmptyStart);
 		}
 		if (jEmptyStart > jEmptyEnd) {
-			t = start[iEmptyStart][jEmptyStart];
-			start[iEmptyStart][jEmptyStart] = start[iEmptyStart][jEmptyStart - 1];
-			start[iEmptyStart][jEmptyStart - 1] = t;
-			jEmptyStart--;
+			moveLeft(start, &iEmptyStart, &jEmptyStart);
 		}
 		if (jEmptyStart < jEmptyEnd) {
-			t = start[iEmptyStart][jEmptyStart];
-			start[iEmptyStart][jEmptyStart] = start[iEmptyStart][jEmptyStart + 1];
-			start[iEmptyStart][jEmptyStart + 1] = t;
-			jEmptyStart++;
+			moveRight(start, &iEmptyStart, &jEmptyStart);
 		}
 	}
 	return;
@@ -184,7 +211,10 @@ int hashMatrixToInt(int matrix[MATRIX_SIZE][MATRIX_SIZE]) {
 
 char set[MAX - MIN];
 
-
+/*
+*	TODO:
+*	implement
+*/
 void findPuzzleSolution(int start[MATRIX_SIZE][MATRIX_SIZE], int end[MATRIX_SIZE][MATRIX_SIZE]) {
 	int m[MATRIX_SIZE][MATRIX_SIZE];
 	int iEmpty, jEmpty;
