@@ -5,13 +5,13 @@
 #define MATRIX_SIZE 3
 #define MATRIX_ELEMENTS MATRIX_SIZE * MATRIX_SIZE
 
-#define MAX 381366965	// MAX changes if MATRIX_SIZE changes
+#define MAX 381367044	// MAX changes if MATRIX_SIZE changes
 #define MIN 6053444	// MIN changes if MATRIX_SIZE changes
 
 #define BITS_IN_BYTE 8
 
 typedef struct StackDataStruct {
-	int value;
+	int value[MATRIX_SIZE][MATRIX_SIZE];
 	int timesOnStack;
 } StackData;
 
@@ -22,10 +22,15 @@ typedef struct StackElemStruct {
 
 #pragma region STACK_FUNCTIONS_IMPLEMENTATION
 
-void push(StackElem **stack, int elemValue) {
+void push(StackElem **stack, int elemValue[MATRIX_SIZE][MATRIX_SIZE]) {
 	StackElem *newElem;
+	int i, j;
 	newElem = (StackElem *)malloc(sizeof(StackElem));
-	newElem->data.value = elemValue;
+	for (i = 0; i < MATRIX_SIZE; i++) {
+		for (j = 0; j < MATRIX_SIZE; j++) {
+			newElem->data.value[i][j] = elemValue[i][j];
+		}
+	}
 	newElem->next = *stack;
 	*stack = newElem;
 	return;
@@ -163,6 +168,41 @@ int isSolutionPossible(int start[MATRIX_SIZE][MATRIX_SIZE], int end[MATRIX_SIZE]
 
 #pragma endregion
 
+int hashMatrixToInt(int matrix[MATRIX_SIZE][MATRIX_SIZE]) {
+	int number = 0;
+	int product = 1;
+	int i, j;
+	for (i = 0; i < MATRIX_SIZE; i++) {
+		for (j = 0; j < MATRIX_SIZE; j++) {
+			number += matrix[i][j] * product;
+			product *= MATRIX_ELEMENTS;
+		}
+	}
+	return number;
+}
+
+
+char set[MAX - MIN];
+
+
+void findPuzzleSolution(int start[MATRIX_SIZE][MATRIX_SIZE], int end[MATRIX_SIZE][MATRIX_SIZE]) {
+	int m[MATRIX_SIZE][MATRIX_SIZE];
+	int iEmpty, jEmpty;
+	int i, j;
+
+	for (i = 0; i < MATRIX_SIZE; i++) {
+		for (j = 0; j < MATRIX_SIZE; j++) {
+			m[i][j] = start[i][j];
+		}
+	}
+
+	findCellWithValue(start, &iEmpty, &jEmpty, 0);
+	
+	/* TODO: implement */
+
+	return;
+}
+
 
 void printMenu() {
 	printf("1. Enter start and end positions for the puzzle\n");
@@ -174,15 +214,12 @@ void printMenu() {
 	return;
 }
 
-
-char set[MAX - MIN];
-
 int main() {
 	int menuOption;
 	int start[MATRIX_SIZE][MATRIX_SIZE];
 	int end[MATRIX_SIZE][MATRIX_SIZE];
 	int flag = 0;
-	
+
 	srand((int)time(NULL));
 
 	while (1) {
@@ -220,7 +257,6 @@ int main() {
 			}
 			break;
 		case 0:	// Exit program
-			/* TODO: deallocation */
 			exit(0);
 		default:
 			break;
