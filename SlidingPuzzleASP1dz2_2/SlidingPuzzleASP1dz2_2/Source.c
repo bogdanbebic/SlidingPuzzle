@@ -130,35 +130,35 @@ void moveDown(int matrix[MATRIX_SIZE][MATRIX_SIZE], int *i, int *j) {
 	return;
 }
 
-void move(int matrix[MATRIX_SIZE][MATRIX_SIZE], int *i, int *j, int *direction) {
+
+int move(int matrix[MATRIX_SIZE][MATRIX_SIZE], int *i, int *j, int *direction) {
 	switch (*direction) {
 	case 0:
 		if (*j != 0) {
 			moveLeft(matrix, i, j);
-			return;
+			return 1;
 		}
 		break;
 	case 1:
 		if (*j != MATRIX_SIZE - 1) {
 			moveRight(matrix, i, j);
-			return;
+			return 1;
 		}
 		break;
 	case 2:
 		if (*i != 0) {
 			moveUp(matrix, i, j);
-			return;
+			return 1;
 		}
 		break;
 	case 3:
-		if (*i != MATRIX_SIZE) {
+		if (*i != MATRIX_SIZE - 1) {
 			moveDown(matrix, i, j);
-			return;
+			return 1;
 		}
 		break;
 	}
-	*direction = -1;
-	return;
+	return 0;
 }
 
 #pragma endregion
@@ -247,7 +247,7 @@ int hashMatrixToInt(int matrix[MATRIX_SIZE][MATRIX_SIZE]) {
 			product *= MATRIX_ELEMENTS;
 		}
 	}
-	return number;
+	return number - MIN;
 }
 
 int areEqual(int x[MATRIX_SIZE][MATRIX_SIZE], int y[MATRIX_SIZE][MATRIX_SIZE]) {
@@ -276,16 +276,14 @@ void outputMatrix(int matrix[MATRIX_SIZE][MATRIX_SIZE]) {
 
 char set[MAX - MIN];
 
-/*
-*	TODO: fix
-*	works for only left solutions
-*/
+
 void findPuzzleSolution(int start[MATRIX_SIZE][MATRIX_SIZE], int end[MATRIX_SIZE][MATRIX_SIZE]) {
 	int iEmpty, jEmpty;
 	int i, j;
 	StackData data;
 	StackElem *stack = NULL;
 	StackElem *stack1 = NULL;
+	int flag = 1;
 	for (i = 0; i < MATRIX_SIZE; i++) {
 		for (j = 0; j < MATRIX_SIZE; j++) {
 			data.value[i][j] = start[i][j];
@@ -293,34 +291,36 @@ void findPuzzleSolution(int start[MATRIX_SIZE][MATRIX_SIZE], int end[MATRIX_SIZE
 	}
 	data.timesOnStack = 0;
 	findCellWithValue(start, &iEmpty, &jEmpty, 0);
-	
-	/* TODO: fix below */
+
 	while (!areEqual(data.value, end)) {
-		while (data.timesOnStack != -1) {
+		while (flag) {
 			if (areEqual(data.value, end)) break;
-			if (set[hashMatrixToInt(data.value)]) data.timesOnStack = -1;
+			if (set[hashMatrixToInt(data.value)]) {
+				flag = 0;
+			}
 			else {
 				set[hashMatrixToInt(data.value)] = 1;
 				push(&stack, data);
 				if (jEmpty != 0) {
 					moveLeft(data.value, &iEmpty, &jEmpty);
-
+					data.timesOnStack = 0;
 				}
 				else {
-					data.timesOnStack = -1;
+					flag = 0;
 				}
 			}
 		}
 		if (areEqual(data.value, end)) break;
 		data = pop(&stack);
-		if (data.timesOnStack < 3 && data.timesOnStack >= 0) {
+		findCellWithValue(data.value, &iEmpty, &jEmpty, 0);
+		if (data.timesOnStack < 3) {
 			data.timesOnStack++;
 			push(&stack, data);
-			move(data.value, &iEmpty, &jEmpty, &data.timesOnStack);
+			flag = move(data.value, &iEmpty, &jEmpty, &data.timesOnStack);
+			data.timesOnStack = 0;
 		}
 	}
 	push(&stack, data);
-	/* TODO: fix above */
 
 	while (!isStackEmpty(&stack)) {
 		push(&stack1, pop(&stack));
@@ -365,7 +365,9 @@ int main() {
 			break;
 		case 2:	// Generate start and end matrix
 			generateMatrix(start);
+			outputMatrix(start);
 			generateMatrix(end);
+			outputMatrix(end);
 			flag = 1;
 			break;
 		case 3:	// Check if solution exists
