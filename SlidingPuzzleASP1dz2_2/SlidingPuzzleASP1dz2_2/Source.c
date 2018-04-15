@@ -284,6 +284,7 @@ void findPuzzleSolution(int start[MATRIX_SIZE][MATRIX_SIZE], int end[MATRIX_SIZE
 	StackElem *stack = NULL;
 	StackElem *stack1 = NULL;
 	int flag = 1;
+	int counter = 0;
 	for (i = 0; i < MATRIX_SIZE; i++) {
 		for (j = 0; j < MATRIX_SIZE; j++) {
 			data.value[i][j] = start[i][j];
@@ -301,6 +302,7 @@ void findPuzzleSolution(int start[MATRIX_SIZE][MATRIX_SIZE], int end[MATRIX_SIZE
 			else {
 				set[hashMatrixToInt(data.value)] = 1;
 				push(&stack, data);
+				counter++;
 				if (jEmpty != 0) {
 					moveLeft(data.value, &iEmpty, &jEmpty);
 					data.timesOnStack = 0;
@@ -312,14 +314,17 @@ void findPuzzleSolution(int start[MATRIX_SIZE][MATRIX_SIZE], int end[MATRIX_SIZE
 		}
 		if (areEqual(data.value, end)) break;
 		data = pop(&stack);
+		counter--;
 		findCellWithValue(data.value, &iEmpty, &jEmpty, 0);
 		if (data.timesOnStack < 3) {
 			data.timesOnStack++;
 			push(&stack, data);
+			counter++;
 			flag = move(data.value, &iEmpty, &jEmpty, &data.timesOnStack);
 			data.timesOnStack = 0;
 		}
 	}
+	printf("%d\n", counter);
 	push(&stack, data);
 
 	while (!isStackEmpty(&stack)) {
